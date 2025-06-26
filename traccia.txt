@@ -1,0 +1,221 @@
+**Il compito da affrontare**
+
+◆ L’obiettivo di questo progetto è segmentare immagini acquisite a bordo di auto in un ambiente rurale
+
+◆ Telecamera in movimento
+
+◆ Sono stati estratti frame statici
+
+◆ Classificare ogni pixel dell'immagine come appartenente a una delle 8 classi:
+
+- Sfondo
+    - 0 BIANCO
+- cielo
+    - 1 BLU RGB (1, 88, 255)
+- sentiero accidentato
+    - 2 MARRONE RGB (156, 76, 30)
+- sentiero liscio
+    - 3 GRIGIO RGB (178, 176, 153)
+- erba percorribile
+    - 4 VERDE CHIARO RGB (128, 255, 0)
+- vegetazione alta
+    - 5 VERDE SCURO RGB (40, 80, 0)
+- vegetazione bassa non percorribile
+    - 6 VERDE MEDIO RGB(0, 160, 0)
+- pozzanghera
+    - 7 FUCSIA RGB(255, 0, 128)
+- ostacolo
+    - 8 ROSSO RGB(255, 0, 0)
+
+Immaginiamo una CNN capace di classificar ogni pixel dell’immagine
+
+◆ Le immagini sono acquisite
+
+◆ dalla stessa telecamera
+
+◆ durante il giorno con differenti condizioni di illuminazione
+
+le immagini sono in uno scenario parzialmente controllato perché il sensore per acquisirle è lo stesso sia per training che test set, quello che cambia sono le condizioni di illuminazione
+
+◆ **Non puoi** estendere il dataset di addestramento
+
+◆ **Puoi** decidere la suddivisione (split)
+
+## **Il dataset**
+
+◆ Accedi con l’account UNISA e scarica il dataset di addestramento:
+
+◆ https://drive.google.com/file/d/1PabQabNg1WT8WrDHWyesEetxXZq3Umb0/view?usp=sharing
+
+◆ 931 campioni:
+
+- Ogni immagine può contenere o meno tutte le classi
+- Puoi scegliere la suddivisione train/val
+- Le etichette vanno da 0 (sfondo) a 8 (8 classi viste prima)
+- Puoi aprire il file per una visualizzazione a colori
+
+ogni campione è una immagine e relativa mappa di etichetta che è la ground truth, l’output desiderato
+
+## **Esempio di architettura di rete neurale**
+
+CNN per la classificazione dei pixel:
+
+◆ L’immagine in input è MxNx3 (canali colore)
+
+◆ Il tensore in output è MxNx9 (classi)
+
+◆ Ognuna delle 9 mappe di output rappresenta la probabilità della classe corrispondente
+
+![image.png](attachment:a2f8cde8-4aa9-4754-90f5-faef56ec1c73:image.png)
+
+possiamo fare un fine tuning di altre reti neurali, possiamo basarci su metodi trovabili in letteratura.
+
+**Un’architettura come quella d’esempio è detta fully convolutional perchè ha tutti layer convoluzionali, non ha layers fully connected perché quelli servono quando dobbiamo estrarre informazioni su tutta l’immagine, con i layer convoluzionali e quindi una serie di kernel possiamo estrarre informazioni su un pixel specifico, la feature estratta avrò guardato la feature estratta ma anche un vicinato esteso che consente di scegliere se quel pixel appartiene ad una classe o l’altra.**
+
+**L’ultimo layer convoluzionale dà in uscita un numero di feature map, una per ogni classe del problema, in maniera tale che ognuna feature map è una mappa di probabilità che quei pixel appartengano a ciascuna delle classi. Da un punto di vista architetturale cu serve una serie di layer convoluzionali di cui l’ultimo layer convoluzionale ha 9 feature map, una per ogni etichetta del problema.**
+
+se guardiamo alle 9 feature map per il singolo pixel, questo vettore è la probabilità che il pixel appartenga alla classe 0, alla classe 1, …
+
+è quello che abbiamo fatto per la classificazione delle immagini solo che ora dobbiamo farlo dei pixel
+
+per la definizione della loss function abbiamo libera scelta, ci sono tanti esempi in pytorch svolti, dovremo selezionare quella che secondo noi è la più adatta
+
+## **IMPORTANTE: L’addestramento e la validazione del modello** non **sono un processo feed-forward**
+
+◆ Alternare fasi di addestramento e validazione:
+
+- Dopo ogni validazione, cerca di capire quali campioni sono stati classificati male e perché
+- Modifica il tuo modello e/o il dataset di addestramento per migliorare le prestazioni
+
+Non mettersi su una pipeline con un addestramento e una validazione. La cosa importante è cercare d interpretare il valore della validation dal punto di vista quantitativo e qualitativo, dobbiamo capire cosa sta sbagliando la rete e capire cosa dobbiamo correggere. Provare a cambiare l’addestramento, l’architettura … faccio test e verifico, non sempre andrà a buon fine.
+
+- Se le prestazioni sembrano molto buone, assicurati che il set di validazione sia abbastanza impegnativo  se le cose sono troppo buone preoccupiamoci
+
+Prima di addentrarci in tempo di addestramento lunghi cerchiamo di capire quanto durano, evitiamo di iniziare serie di esperimenti che non possiamo completare
+
+- Tieni traccia delle contromisure/miglioramenti per la presentazione finale del progetto sempre, che poi gli ultimi giorni sono concitati.
+- Sia le cose positive che negative inserire nel report
+
+### **Cosa puoi usare**
+
+- Non puoi estendere il dataset di addestramento fornito
+- Puoi decidere la suddivisione train/val
+- Puoi usare tecniche di data augmentation
+- Qualsiasi algoritmo (qualsiasi tipo di classificatore, inclusi quelli non neurali, pre-processing, strategia di addestramento, validazione), **MA**:
+    - Devi essere in grado di spiegare cosa hai usato
+
+### **Deve essere eseguibile**
+
+verificare che in colab lo script di test si esegua senza problema, facciamoci furbi, verifichiamo subito se quello che stiamo sviluppando è compatibile con l’ambiente colab. Quello che facciamo deve essere eseguibile in colab
+
+- **all’interno di Google Colab**
+- **in fase di test usando meno di 4 GB di RAM GPU** durante il test verifichiamo l’occupazione in memoria, le reti in letteratura rispettano questo vincolo.  Quando stiamo selezionando le possibili architetture di rete proprio all’inizio verifichiamo quali reti rispettano questo vincolo, per testare questa cosa possiamo usare pesi pretrained o random, è lo stesso
+- **in fase di addestramento usando meno di 5 GB di RAM GPU** per poter partizionare le GPU a disposizione, si riesce ad aggirare facilmente, non dobbiamo fare batch enormi
+
+---
+
+**Valutazione del modello (1 di 2)**
+
+Le prestazioni saranno valutate su un set di test privato misurando la media per classe dell’Intersection-over-Union (IoU):
+
+◆ Per ogni classe si calcolano le maschere binarie delle etichette ground-truth e della previsione della rete
+
+◆ La metrica è il rapporto tra:
+
+- L’intersezione (AND logico tra le due maschere binarie)
+- L’unione (OR logico tra le due maschere)
+    
+    ◆ Si calcola la media dell’IoU su tutte le immagini
+    
+
+![image.png](attachment:b0fbba80-cf80-4aad-a121-4ffe8f373844:image.png)
+
+per ognuna delle clsasi andiamo a confrontare la mappa prodotto con la mappa delle etichette, 
+
+**Valutazione del modello (2 di 2)**
+
+Nella valutazione considereremo le risorse necessarie per il modello e la sua complessità computazionale
+
+Devi selezionare il miglior compromesso tra:
+
+◆ Prestazioni IoU, maggiore è meglio
+
+◆ Memoria GPU richiesta (durante il test), minore è meglio
+
+◆ Frame rate di elaborazione (durante il test), ovvero quanto velocemente il metodo può elaborare un campione in input usando una certa GPU, maggiore è meglio
+
+Si aspettano che facciamo un tradeoff tra i modelli selezionati tra IoU e risorse richieste dal modello e velocità della rete
+
+---
+
+**Condivisione del carico**
+
+◆ A ogni membro del team verrà richiesto di fornire una stima dell’impegno individuale contribuito da tutti i membri
+
+▪ Per prevenire “free riders”
+
+▪ Le sottomissioni saranno “cieche” (ogni membro non vedrà le sottomissioni degli altri)
+
+---
+
+**Cosa devi consegnare**
+
+1. Un link a una cartella Google Drive contenente:
+    
+    ▪ Il codice usato per addestrare il sistema, sotto forma di notebook Google Colab
+    
+    ▪ I dati aggiuntivi di addestramento/validazione usati (incluse le etichette) generati con augmentazione offline ovvero la data augmentation che facciamo una volta per tutte., salviamo i file come file immagine, li mettiamo in una cartella appostia, se invece facciamo augmentation al volo durante il training nel codice non c’è bisogno
+    
+    ▪ Il protocollo di suddivisione train/val
+    
+    ▪ I file contenenti i modelli/pesi salvati dopo l’addestramento consegnare una 
+    
+    ▪ Il codice necessario per testare il sistema (script di test; vedi slide successiva)
+    
+
+---
+
+**Cosa devi consegnare**
+
+Lo script di test deve essere un notebook Google Colab contenente:
+
+◆ Il codice per caricare il modello addestrato
+
+◆ Una funzione "predict" con la seguente specifica:
+
+▪ Prototipo: `predict(X)`
+
+▪ dove: `X` è il tensore contenente un batch di campioni di test; la shape di `X` è:
+
+(batch_size, righe, colonne, 3); il tipo è `uint8`
+
+▪ valore restituito: il tensore con la previsione sul batch; la forma del valore restituito è:
+
+(batch_size, righe, colonne, 1); il tipo è `uint8`, come il formato dei file delle etichette
+
+▪ [batch_size è il numero di campioni nel batch, e non è un valore fisso; la funzione deve funzionare indipendentemente da questo valore]
+
+◆ La funzione predict non vedrà l’intero set di test tutto in una volta dobbiamo scrivere la predict in modo che possa preprocessare i dati, eseguire la rete e il postprocess, tutti i tipi di operazione. La predict deve includere tutto, preprocessing, esecuzione della rete neurale e eventuale postprocessing, tutto nella `predict`. La funzione predict deve dare lo stesso risultato se gli diamo 1 o 100 campioni indifferentemente, deve processarli come se fossero campioni singoli
+
+◆ La funzione predict deve eseguire tutto il preprocessing necessario sul batch di dati di test e il postprocessing sui risultati prima di restituirli
+
+## **Cosa devi consegnare (Documentazione)**
+
+1. Dovrai anche realizzare una presentazione di 8 minuti e un report (entrambi in inglese) contenenti:
+2. La motivazione per la raccolta del dataset
+3. Come è stata effettuata la suddivisione del dataset in set di addestramento e validazione
+4. La pipeline di pre-processing adottata
+5. L’architettura di rete selezionata
+6. L’impostazione degli iperparametri di addestramento, inclusa la funzione di loss
+
+Andare direttamente al sodo, il contesto è scontato.  
+
+# **IMPORTANTE: Non dimenticare di**
+
+**◆ Scrivere i nomi di tutti i membri del team nella cartella Google Drive (in un file di testo)**
+
+**◆ Assicurarti che il link che invii sia leggibile da chiunque (non deve essere richiesta autorizzazione)**
+
+**◆ Verificare che lo script di test sia conforme alle specifiche (se hai dubbi sulle specifiche, chiedi)**
+
+**RICONTROLLARE!!!!!!!!!**
