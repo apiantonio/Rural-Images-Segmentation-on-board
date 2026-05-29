@@ -41,21 +41,7 @@ The model classifies each pixel into one of the following 9 classes:
 
 *Visualization grid — Original image · Ground Truth · Prediction*
 
-<!-- 
-  ════════════════════════════════════════════════════════════════
-  ADD YOUR RESULTS IMAGE HERE
-  ────────────────────────────────────────────────────────────────
-  1. Generate your grid (Original | GT | Prediction) using the
-     visualization cell in the notebook.
-  2. Save the image (e.g., results_grid.png).
-  3. Create an "assets/" folder in this repository and upload it.
-  4. Replace the placeholder below with the actual path:
-     ![Results Grid](assets/results_grid.png)
-  ════════════════════════════════════════════════════════════════
--->
-
-> 📌 *Results visualization coming soon — add your grid image to `assets/results_grid.png`*
-
+> ![Results Grid](rural_grid.png)
 ---
 
 ## 🏗️ Architecture
@@ -67,14 +53,14 @@ Input (H × W × 3)
        │
 ┌──────▼──────┐
 │  ResNet18   │  ← ImageNet pretrained encoder
-│  Encoder   │     Extracts hierarchical spatial features
-│ (5 stages) │     Stride: ×2, ×4, ×8, ×16, ×32
+│  Encoder    │    Extracts hierarchical spatial features
+│ (5 stages)  │    Stride: ×2, ×4, ×8, ×16, ×32
 └──────┬──────┘
        │  bottleneck features
 ┌──────▼──────┐
 │   U-Net     │  ← Decoder with skip connections
-│   Decoder  │     Progressive upsampling back to H × W
-│ (4 stages) │     Skip connections preserve fine-grained detail
+│   Decoder   │    Progressive upsampling back to H × W
+│ (4 stages)  │    Skip connections preserve fine-grained detail
 └──────┬──────┘
        │
 Output (H × W × 9)   ← One probability map per class
